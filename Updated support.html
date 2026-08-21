@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HaulSpot Support</title>
+<style>
+  :root {
+    --accent: #2A9D8F;
+    --ink: #15181A;
+    --ink-secondary: #4B5563;
+    --gray-light: #9AA3AB;
+    --border: #ECEEF0;
+    --bg-soft: #F7F8F9;
+  }
+  body {
+    margin: 0;
+    background: #FFFFFF;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .logo-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-light);
+    margin-bottom: 32px;
+  }
+  h2 {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 28px 0 8px;
+  }
+  p {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink-secondary);
+    margin: 0 0 12px;
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    background: var(--bg-soft);
+  }
+  .card strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  a {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  details {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+  }
+  summary {
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  details p {
+    margin-top: 10px;
+  }
+  .footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--gray-light);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo-dot"></div>
+      <strong>HaulSpot</strong>
+    </div>
+    <h1>Support</h1>
+    <div class="subtitle">Get help with your account, an order, or the app itself.</div>
+
+    <div class="card">
+      <strong>Fastest way to get help</strong>
+      Open the app and tap the chat bubble in the bottom corner — it's available on every screen and connects you with our support assistant, who can escalate to our team when needed.
+    </div>
+
+    <div class="card">
+      <strong>Email</strong>
+      For anything you can't resolve in-app: <a href="mailto:support.haulspot@proton.me">support.haulspot@proton.me</a>
+    </div>
+
+    <h2>Common Questions</h2>
+
+    <details>
+      <summary>How do deliveries work?</summary>
+      <p>Sellers list items for pickup. A nearby driver accepts the job, picks the item up, and drops it off in person — nothing is shipped. You can track pickup/drop-off status from My Orders.</p>
+    </details>
+
+    <details>
+      <summary>Something went wrong with my order — what do I do?</summary>
+      <p>Open My Orders and use "Report a problem," or file a claim from Settings → Claims. Our team reviews the pickup/drop-off photo and video evidence to resolve it.</p>
+    </details>
+
+    <details>
+      <summary>How do I delete my account?</summary>
+      <p>Settings → Delete Account. Your account is deactivated immediately; logging back in within 30 days restores it, after which it's permanently deleted.</p>
+    </details>
+
+    <details>
+      <summary>How do refunds work?</summary>
+      <p>If a claim is confirmed, a refund is issued as part of resolving it. There's no separate refund request — it's handled through the claims process above.</p>
+    </details>
+
+    <details>
+      <summary>I want to report a user, post, or comment.</summary>
+      <p>Tap the "•••" menu on the post/comment, or the Report button on a profile, and describe the issue. Our team reviews every report.</p>
+    </details>
+
+    <div class="footer">HaulSpot Support — we typically respond within 1-2 business days.</div>
+  </div>
+</body>
+</html>
