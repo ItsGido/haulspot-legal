@@ -29,7 +29,7 @@ if $T/selene --display-style=quiet $FILTER 2>"$RUN/selene.txt"; then :; else
 fi
 
 echo "== Cross-references"
-python3 scripts/xref.py || echo "(cross-reference warnings above; services built in parallel may not exist yet)"
+python3 scripts/xref.py || status=1
 
 echo "== Unit tests"
 $T/luau tests/run.luau || status=1

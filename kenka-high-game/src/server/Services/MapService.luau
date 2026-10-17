@@ -112,11 +112,16 @@ local function buildMap(): Folder
 
 	-- Rooftop fence so players don't walk off the main building (blueprint Z5).
 	local fence = makeFolder("RooftopFence", root)
-	local roofTop = 52
-	makePart("North", fence, Vector3.new(240, 8, 1), Vector3.new(0, roofTop + 4, -200), "#5A5E6B", 0.4)
-	makePart("South", fence, Vector3.new(240, 8, 1), Vector3.new(0, roofTop + 4, -140), "#5A5E6B", 0.4)
-	makePart("West", fence, Vector3.new(1, 8, 60), Vector3.new(-120, roofTop + 4, -170), "#5A5E6B", 0.4)
-	makePart("East", fence, Vector3.new(1, 8, 60), Vector3.new(120, roofTop + 4, -170), "#5A5E6B", 0.4)
+	for _, b in MapData.Buildings do
+		if b.Name == "Main School Building" then
+			local top = b.BaseY + b.Height
+			local y = top + 4
+			makePart("North", fence, Vector3.new(b.SizeX, 8, 1), Vector3.new(b.X, y, b.Z - b.SizeZ / 2), "#5A5E6B", 0.4)
+			makePart("South", fence, Vector3.new(b.SizeX, 8, 1), Vector3.new(b.X, y, b.Z + b.SizeZ / 2), "#5A5E6B", 0.4)
+			makePart("West", fence, Vector3.new(1, 8, b.SizeZ), Vector3.new(b.X - b.SizeX / 2, y, b.Z), "#5A5E6B", 0.4)
+			makePart("East", fence, Vector3.new(1, 8, b.SizeZ), Vector3.new(b.X + b.SizeX / 2, y, b.Z), "#5A5E6B", 0.4)
+		end
+	end
 
 	local interactables = makeFolder("Interactables", root)
 	for _, item in MapData.Interactables do

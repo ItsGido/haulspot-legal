@@ -19,7 +19,7 @@
 | **Genre** | Roleplay + skill-based melee PvP |
 | **Target age** | 13+ core, 16+ maturity rating (fist-fighting violence, no blood) *(adj)* |
 | **Devices** | Mobile-first, plus PC and controller |
-| **Server size** | 30 |
+| **Server size** | 20 (compact map, see section 2) |
 | **Session target** | 25–40 min (one school day is 20 min; designed so players stay for 1–2 cycles) |
 | **Art style** | Stylized-realistic, warm and cinematic: golden-hour lighting, cherry blossoms, wet asphalt and neon at night. Mood: *gritty, nostalgic, cool, rowdy, warm*. UI looks like manga: thick black ink outlines, speed lines, bold slanted titles. |
 
@@ -118,44 +118,66 @@ Formula: `t = (cm - 157) / 36` → HP = 90 + 25t, Walk = 17 − 2t, Reach = 0.95
 
 ## 2. World Map (overview)
 
-- **Size:** about 840 × 860 studs (X −420 to 420, Z −380 to 480). Ground at Y = 0. **North = −Z.**
-- **Layout:** the **school campus** (north) linked by **Gate Street** (south) to the **town**, with a cross street, **Kawa-dori**, at Z = 120 running east to the river and west to the park.
-- **Walk times** (16 studs/s): gate → shopping street 9 s, gate → station 26 s, gate → docks 32 s. **Scooters** (Rank 2, 8,000 yen, 40 studs/s) cut that by about 60%.
-- **Landmarks:** the school clock tower (52 studs tall + a 20-stud tower), the red steel river bridge, the station's neon sign, the dock cranes (60 studs), the arcade's giant pixel sign.
+> **v2 (compact).** The first draft was about 840 × 860 studs, far too spread out for a brawler, so it was redesigned at about **500 × 470 studs** for **20-player servers**. The live source of truth is `kenka-high-game/src/shared/Map/MapData.luau`. The tables and `map.svg` below are generated from it.
+
+- **Size:** 500 × 470 studs (X -250 to 250, Z -200 to 270). Ground at Y = 0. **North = −Z.**
+- **Layout:** the school campus (north) and the town (south) sit right next to each other, linked by **Gate Street**, with the cross street **Kawa-dori** at Z = 70 running east to the river and west to the park.
+- **Walk times** (16 studs/s): gate → shopping street 5 s, gate → station 15 s, gate → docks about 18 s, gate → riverbank turf about 14 s. Every interactable is within a 20 s walk of the gate (a unit test enforces this).
+- **Density:** 20 players on about 235,000 square studs is about 11,750 square studs per player, roughly 2× denser than the first draft (about 24,000 per player), and the fight spots are clustered so encounters happen even more often than the raw number suggests.
+- **Fight hotspots stay central:** the back lot, rooftop and basketball court are all within about 10 s of the courtyard.
 
 ### 2.1 Area table
-| # | Area | Zone | Center (X, Z) | Size (X × Z) | Purpose | Unlock |
-|---|---|---|---|---|---|---|
-| 1 | **School Courtyard** (spawn) | Yellow | (0, −70) | 200 × 120 | Spawn, fountain, rumor board, social hub | — |
-| 2 | Main School Building | Green | (0, −170) | 240 × 60 (52 tall) | Nurse's Office (respawn), classrooms, lockers | — |
-| 3 | West Wing | Green | (−140, −70) | 50 × 160 | Classrooms (Class minigame) | — |
-| 4 | East Wing (Clubs) | Green | (140, −70) | 50 × 160 | Music, art, cooking clubs (roleplay) | — |
-| 5 | **Rooftop** | Red | (0, −170) at Y = 52 | 240 × 60 | Iconic duel spot, Banchō hangout | — |
-| 6 | **Back Lot / Bike Shed** | Red | (0, −260) | 200 × 80 | Classic after-school fight spot | — |
-| 7 | Gym | Green (event) | (−260, −230) | 120 × 90 | Gym tournament arena | — |
-| 8 | **Basketball Court** | Red | (240, −230) | 90 × 60 | Open fights, pickup games | — |
-| 9 | Dojo | Green | (240, −100) | 60 × 50 | Style switching, technique unlocks, spar rings | — |
-| 10 | School Field | Yellow | (−300, −60) | 200 × 140 | Track, PE events, open space | — |
-| 11 | **Shotengai** (shopping street) | Yellow → **Turf T1** | (0, 250) | 80 × 220 | Shops, jobs, capsule machines | — |
-| 12 | Train Station | Green | (0, 420) | 140 × 50 | Alternate spawn (Rank 3+), future expansion gate | — |
-| 13 | **Riverbank** (under the bridge) | Red → **Turf T2** | (360, 100) | 120 × 560 | Classic riverbed brawls | — |
-| 14 | Kawa-dori Bridge | Yellow | (360, 120) | 120 × 24 | Crosses the river | — |
-| 15 | **Hinode Park** | Yellow → **Turf T3** | (−230, 220) | 160 × 160 | Cherry trees, hangouts | — |
-| 16 | **Docks** (crew HQs) | Red → **Turf T4** | (−300, 410) | 220 × 120 | 4 warehouses lead into crew HQ interiors | Rank 3 for HQ doors |
-| 17 | **Neon Alley** (arcade) | Yellow → **Turf T5** | (170, 260) | 120 × 100 | Pixel Den arcade, nightlife roleplay | — |
+| Area | Zone | Center (X, Z) | Size (X × Z) | Purpose |
+|---|---|---|---|---|
+| School Courtyard | Yellow | (0, -40) | 120 × 80 | Spawn, fountain, rumor board, social hub |
+| Back Lot | Red | (0, -160) | 140 × 50 | Classic after-school fight spot |
+| School Field | Yellow | (-170, -40) | 100 × 90 | Track, PE events, open space |
+| Gym Arena | Yellow | (-150, -150) | 80 × 60 | Open-air tournament ring (duels only) |
+| Basketball Court | Red | (150, -155) | 60 × 44 | Open fights |
+| Shotengai | Yellow → **Turf T1** | (0, 150) | 60 × 140 | Shops, jobs, capsule machines |
+| Riverbank | Red → **Turf T2** | (205, 60) | 70 × 340 | Riverbed brawls |
+| Kawa-dori Bridge | Yellow | (205, 70) | 70 × 18 | Crosses the river |
+| Hinode Park | Yellow → **Turf T3** | (-140, 150) | 100 × 100 | Cherry trees, hangouts |
+| Docks | Red → **Turf T4** | (-165, 230) | 130 × 60 | 4 warehouses lead to crew HQs |
+| Neon Alley | Yellow → **Turf T5** | (105, 150) | 80 × 70 | Pixel Den arcade, nightlife |
+| Station Plaza | Green | (0, 238) | 100 × 40 | Alternate spawn (Rank 3+) |
+| Rooftop | Red | (0, -105) | 160 × 40 | Iconic duel spot (Y = 52) |
 
-### 2.2 Roads
-| Road | Center (X, Z) | Size (X × Z) |
+Small green safe pockets (shop fronts, the nurse, classrooms, the dojo, the gym entrance, the arcade entrance) are listed in MapData.
+
+### 2.2 Buildings
+| Building | Center (X, Z) | Size |
 |---|---|---|
-| Gate Street | (0, 190) | 24 × 380 |
-| Kawa-dori | (0, 120) | 840 × 24 |
+| Main School Building | (0, -105) | 160 × 40 × 52 tall |
+| Clock Tower | (0, -115) | 16 × 16 × 18 tall |
+| West Wing | (-85, -40) | 36 × 100 × 30 tall |
+| East Wing (Clubs) | (85, -40) | 36 × 100 × 30 tall |
+| Gym Bleachers | (-150, -186) | 80 × 8 × 8 tall |
+| Dojo | (145, -75) | 44 × 36 × 18 tall |
+| Bike Shed | (-45, -178) | 30 × 10 × 10 tall |
+| Train Station | (0, 240) | 90 × 30 × 20 tall |
+| Ichiban Bowl | (-22, 95) | 14 × 18 × 14 tall |
+| Konbini 24 | (22, 95) | 14 × 18 × 12 tall |
+| Tailor Tanaka | (-22, 125) | 14 × 18 × 14 tall |
+| Capsule Corner | (22, 125) | 14 × 18 × 14 tall |
+| Speedy Cycles | (-22, 155) | 14 × 18 × 12 tall |
+| Sento | (22, 155) | 14 × 18 × 16 tall |
+| Kissa Hoshi | (-22, 185) | 14 × 18 × 12 tall |
+| Pharmacy | (22, 185) | 14 × 18 × 12 tall |
+| Pixel Den Arcade | (105, 135) | 28 × 20 × 16 tall |
+| Warehouse 1 | (-215, 250) | 26 × 20 × 18 tall |
+| Warehouse 2 | (-180, 250) | 26 × 20 × 18 tall |
+| Warehouse 3 | (-145, 250) | 26 × 20 × 18 tall |
+| Warehouse 4 | (-110, 250) | 26 × 20 × 18 tall |
 
 ### 2.3 Map artifact
-See **`map.svg`**: 1 grid square = 10 studs, zone colors as above, landmarks and points of interest labeled, with a legend and a north arrow.
+See **`map.svg`**: 1 grid square = 10 studs, zone colors, landmarks and points of interest labeled, with a legend and a north arrow. **`build-map.luau`** builds the same greybox in Studio from the Command Bar (the game also builds it automatically at runtime).
 
 ---
 
 ## 3. Zone Specs
+
+> Exact positions for everything in this section are in `MapData.luau` (v2 compact layout). Descriptions below still apply. The gym is now an **open-air arena** (Yellow, duels only), because fighters can't be teleported inside a solid greybox building.
 
 ### Z1 School Courtyard (spawn), Yellow
 - **Theme:** the front of the school at golden hour. Cherry trees, a stone fountain, iron lamp posts, benches, the clock tower dead ahead.
@@ -633,6 +655,6 @@ Goal: the first action in under 10 s, the first reward in under 40 s, a clear ne
 7. Crews: max 12, in-game, with turf capture on 5 walls. Crew Plus is cosmetic only.
 8. A 20-minute school day cycle drives events.
 9. The server Banchō crown changes hands through challenge duels. The holder must accept Rank 5+ challenges.
-10. Server size 30. Mobile-first UI with the combat cluster above the jump button.
+10. Server size 20 on a compact 500 × 470 stud map (v2). Mobile-first UI with the combat cluster above the jump button.
 11. No player trading in v1.
 12. MVP is milestones 1–12. Crews come in the first update.

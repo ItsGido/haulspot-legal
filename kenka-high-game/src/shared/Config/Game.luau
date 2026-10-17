@@ -2,7 +2,7 @@
 
 local Game = {
 	Title = "KENKA HIGH",
-	ServerSize = 30,
+	ServerSize = 20, -- also set Max Players to 20 in Game Settings > Places
 
 	-- DataStores. Bump the version suffix to wipe all progress (never do this after launch).
 	ProfileStoreName = "KenkaProfiles_v1",
@@ -28,7 +28,7 @@ local Game = {
 		SignupCooldownSeconds = 600, -- after a tournament ends
 		WinnerScrolls = 10,
 		FinalistScrolls = 4,
-		RingCenter = { -260, -230 }, -- X, Z inside the gym (fighters are teleported here)
+		RingCenter = { -150, -150 }, -- X, Z of the open-air Gym Arena (fighters are teleported here)
 		RingRadius = 18,
 	},
 
@@ -41,7 +41,7 @@ local Game = {
 
 	Challenge = {
 		PromptDistance = 8,
-		RingRadius = 30,
+		RingRadius = 20,
 		ResponseTimeout = 10,
 		LeaveRingGrace = 3,
 		CooldownAfterDuel = 30,

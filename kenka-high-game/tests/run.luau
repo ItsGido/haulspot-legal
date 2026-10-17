@@ -53,30 +53,30 @@ test("spawn is in the yellow courtyard", function()
 	eq(r.Type, "Yellow")
 end)
 test("back lot is red", function()
-	eq(zoneAt(0, 3, -260).Type, "Red")
+	eq(zoneAt(0, 3, -160).Type, "Red")
 end)
 test("rooftop is red only above Y 50", function()
-	eq(zoneAt(0, 55, -170).Name, "Rooftop")
-	eq(zoneAt(0, 55, -170).Type, "Red")
-	eq(zoneAt(0, 3, -170).Name ~= "Rooftop", true, "ground under roof")
+	eq(zoneAt(0, 55, -105).Name, "Rooftop")
+	eq(zoneAt(0, 55, -105).Type, "Red")
+	eq(zoneAt(0, 3, -105).Name ~= "Rooftop", true, "ground under roof")
 end)
 test("shop fronts are green pockets inside the shotengai", function()
-	local r = zoneAt(-18, 3, 164)
+	local r = zoneAt(-12, 3, 90)
 	eq(r.Type, "Green")
 	eq(r.Turf, "T1")
 end)
 test("turf war turns shotengai street red but keeps shop fronts green", function()
-	eq(zoneAt(0, 3, 250, false).Type, "Yellow", "street before turf war")
-	eq(zoneAt(0, 3, 250, true).Type, "Red", "street during turf war")
-	eq(zoneAt(-18, 3, 164, true).Type, "Green", "shop front during turf war")
+	eq(zoneAt(0, 3, 150, false).Type, "Yellow", "street before turf war")
+	eq(zoneAt(0, 3, 150, true).Type, "Red", "street during turf war")
+	eq(zoneAt(-12, 3, 90, true).Type, "Green", "shop front during turf war")
 end)
 test("river water counts as red riverbank", function()
-	local r = zoneAt(360, 1, 300)
+	local r = zoneAt(205, 1, 200)
 	eq(r.Type, "Red")
 	eq(r.Turf, "T2")
 end)
 test("open ground defaults to yellow streets", function()
-	local r = zoneAt(150, 3, 60)
+	local r = zoneAt(150, 3, 30)
 	eq(r.Type, "Yellow")
 end)
 test("every interactable sits in a green pocket or a safe-enough zone", function()
@@ -130,6 +130,29 @@ test("every shop item points at a real shop interactable", function()
 			end
 		end
 		eq(found, true, shopItem.Id .. " shop " .. shopItem.Shop)
+	end
+end)
+test("map is compact: everything within 20 s walk of the gate", function()
+	for _, item in MapData.Interactables do
+		local distance = math.sqrt(item.X ^ 2 + item.Z ^ 2)
+		eq(distance / 16 <= 20, true, item.Id .. " is " .. math.floor(distance / 16) .. " s from the gate")
+	end
+end)
+test("tournament ring is open ground, not inside a building", function()
+	local GameConfig = require("../src/shared/Config/Game")
+	local c = GameConfig.Tournament.RingCenter
+	for _, b in MapData.Buildings do
+		local inside = math.abs(c[1] - b.X) < b.SizeX / 2 + GameConfig.Tournament.RingRadius and math.abs(c[2] - b.Z) < b.SizeZ / 2
+		eq(inside, false, "ring overlaps " .. b.Name)
+	end
+	eq(zoneAt(c[1], 3, c[2]).Type ~= "Green", true, "duels are blocked in green zones")
+end)
+test("arcade tokens can't spawn inside buildings", function()
+	local a = Economy.ArcadeTokenArea
+	for _, b in MapData.Buildings do
+		local overlapX = math.abs(a[1] - b.X) < a[3] + b.SizeX / 2
+		local overlapZ = math.abs(a[2] - b.Z) < a[4] + b.SizeZ / 2
+		eq(overlapX and overlapZ, false, "token area overlaps " .. b.Name)
 	end
 end)
 test("turf walls match crew turf ids", function()

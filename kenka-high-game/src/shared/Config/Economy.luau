@@ -81,12 +81,12 @@ local Economy = {
 	} :: { [string]: Job },
 
 	-- Ramen delivery drop points (X, Z). Server checks the player reaches each in order.
-	RamenDropPoints = { { -150, 150 }, { 150, 180 }, { -60, 300 }, { 60, 360 }, { -200, 300 }, { 120, 140 } },
+	RamenDropPoints = { { -110, 90 }, { 90, 95 }, { -60, 200 }, { 50, 215 }, { -150, 110 }, { 130, 55 } },
 	RamenDropRadius = 12,
 	RamenDropsPerRun = 3,
 
 	-- Arcade token spawn area around Neon Alley (center X, Z, half size)
-	ArcadeTokenArea = { 170, 260, 55, 45 },
+	ArcadeTokenArea = { 105, 165, 35, 15 },
 	ArcadeTokensPerRun = 6,
 	ArcadeTokenRadius = 6,
 
