@@ -18,7 +18,7 @@ local Monetization = {
 		CapsuleToken10 = { Key = "CapsuleToken10", Id = 0, Name = "10 Capsule Tokens", Price = 225, Description = "10 capsule rolls" },
 		StarterPack = { Key = "StarterPack", Id = 0, Name = "Starter Pack", Price = 99, Description = "5,000 yen, 10 scrolls, 3 capsule tokens, Rookie jacket" },
 		TermPass = { Key = "TermPass", Id = 0, Name = "Term Pass", Price = 399, Description = "Premium track for this term" },
-		NameChange = { Key = "NameChange", Id = 0, Name = "Name Change", Price = 99, Description = "Change your in-game display name" },
+		-- NameChange (99 R$) is planned but needs a filtered rename flow before it can be sold.
 		YenPack = { Key = "YenPack", Id = 0, Name = "Yen Pack", Price = 49, Description = "2,000 yen" },
 	} :: { [string]: Product },
 

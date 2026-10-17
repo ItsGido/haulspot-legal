@@ -24,6 +24,7 @@ local HeightStats = require(ReplicatedStorage.Shared.Logic.HeightStats)
 local RepMath = require(ReplicatedStorage.Shared.Logic.RepMath)
 local Net = require(ReplicatedStorage.Shared.Util.Net)
 local Signal = require(ReplicatedStorage.Shared.Util.Signal)
+local RateLimiter = require(ReplicatedStorage.Shared.Util.RateLimiter)
 
 local DataService = {}
 DataService.Priority = 10
@@ -76,11 +77,13 @@ local PRIVATE_KEYS = { PurchaseHistory = true }
 type Session = {
 	Profile: any,
 	Memory: boolean, -- true = unsaved Studio profile
+	Releasing: boolean, -- final save has started (ProfileReleasing handlers can still read the profile)
 	Released: boolean,
 	LastSave: number,
 }
 
 local sessions: { [Player]: Session } = {}
+local savesInFlight = 0 -- final saves still running (BindToClose waits for these)
 local store: DataStore? = nil
 local dataUpdate = Net.Event("Data_Update")
 
@@ -244,7 +247,7 @@ local function onPlayerAdded(player: Player)
 	if player.Parent ~= Players then
 		if profile and not memory then
 			-- They left while loading: release the lock we just took.
-			sessions[player] = { Profile = profile, Memory = false, Released = false, LastSave = 0 }
+			sessions[player] = { Profile = profile, Memory = false, Releasing = false, Released = false, LastSave = 0 }
 			saveProfile(player, true)
 			sessions[player] = nil
 		end
@@ -264,7 +267,7 @@ local function onPlayerAdded(player: Player)
 		profile.TutorialDone = true
 	end
 
-	sessions[player] = { Profile = profile, Memory = memory, Released = false, LastSave = os.clock() }
+	sessions[player] = { Profile = profile, Memory = memory, Releasing = false, Released = false, LastSave = os.clock() }
 	syncAttributes(player, profile)
 	if memory then
 		warn("[DataService] Using an UNSAVED in-memory profile for " .. player.Name .. " (Studio API access is off).")
@@ -274,14 +277,18 @@ end
 
 local function onPlayerRemoving(player: Player)
 	local session = sessions[player]
-	if not session or session.Released then
+	if not session or session.Releasing then
 		return
 	end
-	session.Released = true
+	session.Releasing = true
+	savesInFlight += 1
+	-- Handlers (e.g. ending a duel as a loss) run while GetProfile still works, then we save.
 	DataService.ProfileReleasing:Fire(player, session.Profile)
-	task.wait() -- let ProfileReleasing handlers write session data first
+	task.wait()
+	session.Released = true
 	saveProfile(player, true)
 	sessions[player] = nil
+	savesInFlight -= 1
 end
 
 -- Public API -----------------------------------------------------------------
@@ -427,16 +434,20 @@ function DataService.Init(services: any)
 		return DataService.GetPublicProfile(player)
 	end
 
+	local settingsLimiter = RateLimiter.new(4, 2)
+	local function isNumber(x: any): boolean
+		return type(x) == "number" and x == x and x ~= math.huge and x ~= -math.huge
+	end
 	Net.Event("Settings_Save").OnServerEvent:Connect(function(player: Player, settings: any)
 		local profile = DataService.GetProfile(player)
-		if not profile or type(settings) ~= "table" then
+		if not profile or type(settings) ~= "table" or not settingsLimiter:Allow(player) then
 			return
 		end
 		local s = profile.Settings
-		if type(settings.Music) == "number" then
+		if isNumber(settings.Music) then
 			s.Music = math.clamp(settings.Music, 0, 1)
 		end
-		if type(settings.SFX) == "number" then
+		if isNumber(settings.SFX) then
 			s.SFX = math.clamp(settings.SFX, 0, 1)
 		end
 		if type(settings.CameraShake) == "boolean" then
@@ -446,7 +457,19 @@ function DataService.Init(services: any)
 			s.DamageNumbers = settings.DamageNumbers
 		end
 		if type(settings.MobileLayout) == "table" then
-			s.MobileLayout = settings.MobileLayout
+			-- Rebuild from scratch: at most 20 short string keys mapping to { X, Y } in 0..1.
+			local layout = {}
+			local count = 0
+			for key, pos in settings.MobileLayout do
+				if count >= 20 then
+					break
+				end
+				if type(key) == "string" and #key <= 24 and type(pos) == "table" and isNumber(pos[1]) and isNumber(pos[2]) then
+					layout[key] = { math.clamp(pos[1], 0, 1), math.clamp(pos[2], 0, 1) }
+					count += 1
+				end
+			end
+			s.MobileLayout = layout
 		end
 		if type(settings.RookieOptOut) == "boolean" and settings.RookieOptOut ~= s.RookieOptOut then
 			-- Turning protection back on is blocked for 10 minutes after opting out, and during fights.
@@ -494,16 +517,14 @@ function DataService.Start()
 	end)
 
 	game:BindToClose(function()
-		local pending = 0
+		-- Start a final save for anyone not already saving, then wait for every in-flight save
+		-- (including ones PlayerRemoving started just before shutdown).
 		for player in sessions do
-			pending += 1
-			task.spawn(function()
-				onPlayerRemoving(player)
-				pending -= 1
-			end)
+			task.spawn(onPlayerRemoving, player)
 		end
+		task.wait()
 		local started = os.clock()
-		while pending > 0 and os.clock() - started < 25 do
+		while savesInFlight > 0 and os.clock() - started < 25 do
 			task.wait(0.1)
 		end
 	end)

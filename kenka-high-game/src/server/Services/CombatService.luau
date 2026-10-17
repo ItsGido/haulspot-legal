@@ -595,12 +595,13 @@ local function canHit(attacker: Fighter, target: Fighter, ignoreDowned: boolean?
 	if not ap or not tp then
 		return false
 	end
+	-- Duels first: a duelist can't make themselves unhittable by stepping into a green strip inside the ring.
+	if inDuel(ap) or inDuel(tp) then
+		return areDueling(ap, tp)
+	end
 	local za, zt = zoneType(attacker), zoneType(target)
 	if za == "Green" or zt == "Green" then
 		return false
-	end
-	if inDuel(ap) or inDuel(tp) then
-		return areDueling(ap, tp)
 	end
 	if not ZoneMath.AllowsOpenFight(za, zt) then
 		return false

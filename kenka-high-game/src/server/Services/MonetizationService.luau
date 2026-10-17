@@ -165,12 +165,21 @@ end
 
 -- Receipts -------------------------------------------------------------------
 
+local RECEIPT_PROFILE_WAIT = 20 -- seconds to wait for a joining player's profile
+
 local function processReceipt(receiptInfo: any): Enum.ProductPurchaseDecision
 	local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
 	if not player then
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
+	-- A pending receipt is often delivered right as the player joins: wait for the profile
+	-- (ProcessReceipt may yield) instead of deferring it to their next session.
 	local profile = Services.DataService.GetProfile(player)
+	local deadline = os.clock() + RECEIPT_PROFILE_WAIT
+	while not profile and player.Parent == Players and os.clock() < deadline do
+		task.wait(0.5)
+		profile = Services.DataService.GetProfile(player)
+	end
 	if not profile then
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
@@ -229,11 +238,15 @@ local function registerBuiltIns()
 		if not profile then
 			return false
 		end
-		local eligible = starterPackEligible(player)
-		if not eligible then
-			return false
-		end
 		local pack = Monetization.StarterPack
+		if not starterPackEligible(player) then
+			-- The window closed (or a second purchase raced the first) between the prompt and the receipt.
+			-- Never leave paid Robux ungranted: give the pack's yen value instead.
+			profile.Yen += pack.Yen
+			Services.DataService.Replicate(player, "Yen")
+			Notify.Send(player, string.format("The Starter Pack offer had ended, so you got ¥%d instead.", pack.Yen), "gold", 6)
+			return true
+		end
 		profile.StarterPack.Bought = true
 		profile.Yen += pack.Yen -- direct: purchased yen gets no pass bonus and no quest credit
 		profile.Scrolls += pack.Scrolls
@@ -279,16 +292,7 @@ local function registerBuiltIns()
 		return true
 	end)
 
-	MonetizationService.RegisterProduct("NameChange", function(player: Player): boolean
-		local profile = Services.DataService.GetProfile(player)
-		if not profile then
-			return false
-		end
-		profile.Badges.NameChangeCredit = true
-		Services.DataService.Replicate(player, "Badges")
-		Notify.Send(player, "Name change credit added", "gold")
-		return true
-	end)
+	-- NameChange is intentionally not sold yet: it needs a filtered rename remote first (see docs/ARCHITECTURE.md).
 end
 
 -- Lifecycle --------------------------------------------------------------------

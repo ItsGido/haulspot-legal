@@ -174,18 +174,34 @@ function RepService.FightResult(winner: Player, loser: Player, info: any?)
 	local winnerRank = RepService.GetRank(winner)
 	local loserRank = RepService.GetRank(loser)
 
+	-- Loser side first, before anything that can yield (the friend check below yields), so a player
+	-- leaving mid-fight still takes the loss before their profile is saved.
+	local repLost = 0
+	if loserProfile then
+		if kind ~= "Tournament" then
+			local before = loserProfile.Rep
+			loserProfile.Rep = RepMath.ApplyLoss(Ranks, before)
+			repLost = before - loserProfile.Rep
+		end
+		loserProfile.Stats.Losses += 1
+		Services.DataService.Replicate(loser, "Rep", "Stats")
+	end
+
+	-- Anti-farm: past the per-hour cap against the same opponent, the winner gets no rewards at all
+	-- (no Rep, yen, win XP or quest progress), so alts can't grind dailies off each other.
+	local farmed = kind ~= "Tournament" and not underFarmCap(winner, loser)
+	if farmed and winnerProfile then
+		Notify.Send(winner, "No rewards: you've beaten this player too often this hour.", "info")
+	end
+
 	-- Winner Rep
 	local repGained = 0
-	if winnerProfile and kind ~= "Tournament" then
+	if winnerProfile and kind ~= "Tournament" and not farmed then
 		local base = 0
 		if kind == "Duel" then
 			base = if type(fight.Wager) == "number" then fight.Wager else RepMath.DuelWager(Ranks, winnerRank, loserRank)
 		else
 			base = RepMath.OpenFightReward(Ranks, winnerRank, loserRank)
-		end
-		if base > 0 and not underFarmCap(winner, loser) then
-			base = 0
-			Notify.Send(winner, "No Rep: you've beaten this player too often this hour.", "info")
 		end
 		if base > 0 then
 			local multiplier = 1
@@ -207,17 +223,8 @@ function RepService.FightResult(winner: Player, loser: Player, info: any?)
 		end
 	end
 
-	-- Loser penalty (floored at the current rank)
-	local repLost = 0
-	if loserProfile and kind ~= "Tournament" then
-		local before = loserProfile.Rep
-		loserProfile.Rep = RepMath.ApplyLoss(Ranks, before)
-		repLost = before - loserProfile.Rep
-		Services.DataService.Replicate(loser, "Rep")
-	end
-
 	-- Yen
-	if winnerProfile and kind ~= "Tournament" then
+	if winnerProfile and kind ~= "Tournament" and not farmed then
 		Services.DataService.AddYen(winner, Combat.FightWinYen, "Fight")
 	end
 
@@ -226,35 +233,33 @@ function RepService.FightResult(winner: Player, loser: Player, info: any?)
 	if styleService then
 		local winnerHits = if type(fight.WinnerHits) == "number" then fight.WinnerHits else 0
 		local loserHits = if type(fight.LoserHits) == "number" then fight.LoserHits else 0
-		if winnerProfile then
+		if winnerProfile and not farmed then
 			local hitXP = math.min(winnerHits * Combat.MasteryXPPerHit, Combat.MasteryXPHitCapPerFight)
 			styleService.AddMasteryXP(winner, Combat.MasteryXPWin + hitXP)
 		end
-		if loserProfile then
+		if loserProfile and Services.DataService.GetProfile(loser) then
 			local hitXP = math.min(loserHits * Combat.MasteryXPPerHit, Combat.MasteryXPHitCapPerFight)
 			styleService.AddMasteryXP(loser, Combat.MasteryXPLoss + hitXP)
 		end
 	end
 
-	-- Stats and quests
+	-- Winner stats and quests
 	if winnerProfile then
 		winnerProfile.Stats.Wins += 1
 		if kind == "Duel" then
 			winnerProfile.Stats.DuelsWon += 1
 		end
 		Services.DataService.Replicate(winner, "Stats")
-		Util.Quest(Services, winner, "WinFight", 1)
-		if kind == "Duel" then
-			Util.Quest(Services, winner, "WinDuel", 1)
+		if not farmed then
+			Util.Quest(Services, winner, "WinFight", 1)
+			if kind == "Duel" then
+				Util.Quest(Services, winner, "WinDuel", 1)
+			end
 		end
-	end
-	if loserProfile then
-		loserProfile.Stats.Losses += 1
-		Services.DataService.Replicate(loser, "Stats")
 	end
 
 	-- Toasts
-	if winnerProfile and Util.IsOnline(winner) and kind ~= "Tournament" then
+	if winnerProfile and Util.IsOnline(winner) and kind ~= "Tournament" and not farmed then
 		Notify.Send(winner, string.format("You beat %s! +%d Rep, +¥%d", Util.Name(loser), repGained, Combat.FightWinYen), "good")
 	end
 	if loserProfile and Util.IsOnline(loser) and kind ~= "Tournament" then

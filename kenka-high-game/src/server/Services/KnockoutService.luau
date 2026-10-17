@@ -328,7 +328,7 @@ function KnockoutService.OnZeroHP(targetModel: Model, attackerModel: Model?)
 
 	local name = displayName(targetModel)
 	local finishPrompt = state.Cleaner:Add(
-		makePrompt(root, FINISH_PROMPT, "Finish", name, Enum.KeyCode.V, Enum.KeyCode.ButtonY, Combat.FinishHoldTime)
+		makePrompt(root, FINISH_PROMPT, "Finish", name, Enum.KeyCode.V, Enum.KeyCode.ButtonR3, Combat.FinishHoldTime) -- R3: ButtonY is Stance
 	)
 	state.Cleaner:Add(finishPrompt.PromptButtonHoldBegan:Connect(function(player: Player)
 		state.HoldStarted[player] = os.clock()

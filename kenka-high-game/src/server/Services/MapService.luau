@@ -220,11 +220,18 @@ function MapService.Init(services: any)
 	if baseplate and baseplate:IsA("BasePart") then
 		baseplate:Destroy()
 	end
-	for _, part in mapFolder:WaitForChild("Interactables"):GetChildren() do
-		CollectionService:AddTag(part, "Interactable")
-	end
-	for _, part in mapFolder:WaitForChild("TurfWalls"):GetChildren() do
-		CollectionService:AddTag(part, "TurfWall")
+	-- FindFirstChild, not WaitForChild: Init must never yield, and a hand-built art map missing a
+	-- folder should warn instead of freezing every service's startup.
+	local folderTags: { [string]: string } = { Interactables = "Interactable", TurfWalls = "TurfWall" }
+	for folderName, tag in folderTags do
+		local folder = mapFolder:FindFirstChild(folderName)
+		if folder then
+			for _, part in folder:GetChildren() do
+				CollectionService:AddTag(part, tag)
+			end
+		else
+			warn(string.format("[MapService] Workspace.KenkaHighMap has no %s folder; %s features won't work.", folderName, tag))
+		end
 	end
 
 	Net.Event("Unstuck").OnServerEvent:Connect(function(player: Player)

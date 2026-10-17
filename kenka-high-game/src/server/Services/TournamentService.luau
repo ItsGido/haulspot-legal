@@ -304,56 +304,76 @@ local function run()
 	broadcast()
 	Notify.All(string.format("The gym tournament is starting with %d fighters!", #entrants), "gold")
 
-	local alive = entrants
-	local finalist: Player? = nil
-	local semifinalists: { Player } = {}
-	while #alive > 1 do
-		local round: { Match } = {}
-		local matchups: { { Player? } } = {}
-		for i = 1, #alive, 2 do
-			local a, b = alive[i], alive[i + 1]
-			table.insert(round, { A = a.DisplayName, B = if b then b.DisplayName else nil, Winner = nil })
-			table.insert(matchups, { a, b })
+	local function eliminate(p: Player)
+		-- Knocked out of the bracket: free them right away (buffs, duels, vehicles work again).
+		participants[p] = nil
+		if Util.IsOnline(p) then
+			p:SetAttribute("InTournament", nil)
+			teleportOut(p)
 		end
-		table.insert(bracket, round)
-		broadcast()
-
-		local nextAlive: { Player } = {}
-		local roundLosers: { Player } = {}
-		local fieldSize = #alive
-		for index, pair in matchups do
-			local a = pair[1] :: Player
-			local b = pair[2]
-			local entry = round[index]
-			local winner, loser = playMatch(a, b, entry)
-			if winner then
-				entry.Winner = winner.DisplayName
-				table.insert(nextAlive, winner)
-			end
-			if loser then
-				table.insert(roundLosers, loser)
-			end
-			broadcast()
-			if index < #matchups or #nextAlive > 1 then
-				task.wait(Config.BetweenMatchesSeconds)
-			end
-		end
-		if fieldSize == 2 then
-			finalist = roundLosers[1]
-		elseif fieldSize <= 4 then
-			semifinalists = roundLosers
-		end
-		alive = nextAlive
 	end
 
-	local champion: Player? = alive[1]
-	if champion and not Util.IsOnline(champion) then
+	local champion: Player? = nil
+	local ok, err = pcall(function()
+		local alive = entrants
+		local finalist: Player? = nil
+		local semifinalists: { Player } = {}
+		while #alive > 1 do
+			local round: { Match } = {}
+			local matchups: { { Player? } } = {}
+			for i = 1, #alive, 2 do
+				local a, b = alive[i], alive[i + 1]
+				table.insert(round, { A = a.DisplayName, B = if b then b.DisplayName else nil, Winner = nil })
+				table.insert(matchups, { a, b })
+			end
+			table.insert(bracket, round)
+			broadcast()
+
+			local nextAlive: { Player } = {}
+			local roundLosers: { Player } = {}
+			local fieldSize = #alive
+			for index, pair in matchups do
+				local a = pair[1] :: Player
+				local b = pair[2]
+				local entry = round[index]
+				local winner, loser = playMatch(a, b, entry)
+				if winner then
+					entry.Winner = winner.DisplayName
+					table.insert(nextAlive, winner)
+				end
+				if loser then
+					table.insert(roundLosers, loser)
+					eliminate(loser)
+				end
+				broadcast()
+				if index < #matchups or #nextAlive > 1 then
+					task.wait(Config.BetweenMatchesSeconds)
+				end
+			end
+			if fieldSize == 2 then
+				finalist = roundLosers[1]
+			elseif fieldSize <= 4 then
+				semifinalists = roundLosers
+			end
+			alive = nextAlive
+		end
+
+		champion = alive[1]
+		if champion and not Util.IsOnline(champion) then
+			champion = nil
+		end
+		givePrizes(champion, finalist, semifinalists)
+	end)
+	if not ok then
+		warn("[TournamentService] Tournament aborted: " .. tostring(err))
 		champion = nil
 	end
-	givePrizes(champion, finalist, semifinalists)
 
+	-- Always runs, even after an error, so nobody is left flagged InTournament.
 	state = "Finished"
-	message = if champion then champion.DisplayName .. " is the Gym King!" else "The tournament ended with no winner."
+	message = if champion then champion.DisplayName .. " is the Gym King!"
+		elseif ok then "The tournament ended with no winner."
+		else "The tournament was cancelled."
 	broadcast()
 	for p in participants do
 		if Util.IsOnline(p) then
@@ -361,10 +381,10 @@ local function run()
 			teleportOut(p)
 		end
 	end
+	participants = {}
 	cooldownUntil = os.clock() + Config.SignupCooldownSeconds
 	task.wait(Config.BetweenMatchesSeconds)
 	state = "Idle"
-	participants = {}
 	currentMatch = nil
 	message = string.format("Next tournament sign-ups open in %d min.", math.ceil(Config.SignupCooldownSeconds / 60))
 	broadcast()

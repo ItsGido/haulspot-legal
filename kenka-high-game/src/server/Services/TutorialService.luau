@@ -40,8 +40,8 @@ local REMOTE_RATE, REMOTE_PER = 3, 1
 
 local TEXT = {
 	PickStyle = "Oi, transfer kid. You lost? Pick your fighting style.",
-	Attack = "Attack! Land %d hits on Goro (Left click / R2). %d/%d",
-	Block = "Goro's winding up. Hold F (L2) to BLOCK his hit.",
+	Attack = "Press T (gamepad Y, or the STANCE button) to raise your fists, then land %d hits on Goro (Left click / R2 / ATTACK). %d/%d",
+	Block = "Goro's winding up. Hold F (L2 / BLOCK) to block his hit. Keep your fists up (T).",
 	Parry = "Now tap F (L2) right as his attack lands to PARRY.",
 	Heavy = "Break his guard with a HEAVY attack (Right click / R).",
 	KO = "Finish it! Knock Goro down.",
@@ -360,6 +360,10 @@ local function onPickStyle(player: Player, styleId: any): boolean
 	session.Picked = true
 	if Services.CombatService then
 		Services.CombatService.RefreshStats(player)
+		-- Raise their fists for them so the first click lands (the step text explains T for later).
+		if player.Character then
+			Services.CombatService.SetStance(player.Character, true)
+		end
 	end
 	session.Hits = 0
 	send(session, "Attack", attackText(0))

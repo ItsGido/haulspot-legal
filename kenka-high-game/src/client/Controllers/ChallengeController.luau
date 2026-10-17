@@ -19,6 +19,7 @@ ChallengeController.DuelChanged = Signal.new() -- (payload?)
 
 local PROMPT_NAME = "ChallengePrompt"
 local OWNER_RETRY = 0.5 -- seconds
+local REFRESH_INTERVAL = 0.5 -- re-check downed state and zones
 local SEND_COOLDOWN = 1 -- seconds between list challenges (the server also rate-limits)
 
 local localPlayer = Players.LocalPlayer
@@ -42,9 +43,21 @@ local function busy(player: Player?): boolean
 	return player:GetAttribute("InDuel") == true or player:GetAttribute("InTournament") == true
 end
 
+local function downed(player: Player): boolean
+	local character = player.Character
+	return character ~= nil and character:GetAttribute("Downed") == true
+end
+
+-- Hidden when it can't succeed, so it never steals the E key from Help Up or shop/job prompts:
+-- on your own character, during duels/tournaments, on downed players, and while you stand in a Green zone.
 local function refresh(prompt: ProximityPrompt)
 	local owner = ownerOf(prompt)
-	local enabled = owner ~= nil and owner ~= localPlayer and not busy(localPlayer) and not busy(owner)
+	local enabled = owner ~= nil
+		and owner ~= localPlayer
+		and not busy(localPlayer)
+		and not busy(owner)
+		and not downed(owner)
+		and localPlayer:GetAttribute("ZoneType") ~= "Green"
 	if prompt.Enabled ~= enabled then
 		prompt.Enabled = enabled
 	end
@@ -133,6 +146,11 @@ function ChallengeController.Start()
 	localPlayer.CharacterAdded:Connect(function()
 		task.defer(refreshAll)
 	end)
+	localPlayer:GetAttributeChangedSignal("ZoneType"):Connect(refreshAll)
+	while true do
+		task.wait(REFRESH_INTERVAL)
+		refreshAll()
+	end
 end
 
 return ChallengeController

@@ -189,7 +189,7 @@ Screen names used with `UIController.Open`: `Phone`, `Rumors`, `Style`, `Crew`, 
 | Tech 1 / Tech 2 / Heat | Z / X / G | DPad Left / DPad Right / L1 |
 | Phone | Left Alt or the Phone button | DPad Up |
 | Vehicle | B | DPad Down |
-| Finish downed (prompt) | V (hold) | — |
+| Finish downed (prompt) | V (hold) | R3 (hold) |
 | Help up / Challenge / interact (prompt) | E | X |
 
 ---

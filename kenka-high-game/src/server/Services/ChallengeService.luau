@@ -621,6 +621,14 @@ function ChallengeService.Start()
 		hook(player)
 	end
 
+	-- End a leaver's duel while their profile is still writable, so the loss is saved.
+	Services.DataService.ProfileReleasing:Connect(function(player: Player)
+		local duel = duels[player]
+		if duel then
+			endDuel(duel, opponentOf(duel, player), player, "Left")
+		end
+	end)
+
 	Players.PlayerRemoving:Connect(function(player)
 		clearPendingFor(player, player.DisplayName .. " left.")
 		local duel = duels[player]
