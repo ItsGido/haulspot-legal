@@ -283,9 +283,7 @@ function Creator.Open(_w: Kit.Window, data: any?)
 		local value = tonumber(appearance[picker.Key])
 		selection[picker.Key] = if value then math.clamp(math.floor(value), 1, options) else 1
 	end
-	if options ~= optionCount or #swatchFolders == 0 then
-		optionCount = options
-	end
+	optionCount = math.clamp(math.floor(options), 1, DEFAULT_OPTIONS * 2)
 	rebuildSwatches()
 	updateHeight()
 	setStatus(if freeHeight then "Your first height change is free!" else "", if freeHeight then true else nil)
