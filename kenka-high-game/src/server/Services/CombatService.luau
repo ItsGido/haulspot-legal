@@ -687,14 +687,17 @@ end
 -- Hit resolution --------------------------------------------------------------------------------------
 local function resolveParry(attacker: Fighter, target: Fighter): boolean
 	local clock = os.clock()
-	if not (target.Blocking and target.ParryEligible and CombatMath.IsParry(target.BlockStartedAt, clock, Combat.ParryWindow)) then
+	-- A tap counts even if the block key was already released when the hit arrives.
+	if not (target.ParryEligible and CombatMath.IsParry(target.BlockStartedAt, clock, Combat.ParryWindow)) then
 		return false
 	end
 	markCombat(attacker)
 	markCombat(target)
 	local position = (attacker.Root.Position + target.Root.Position) / 2
 	-- Both fighters tapped block at the same moment: a clash, no bonuses.
-	if attacker.Blocking and attacker.ParryEligible and CombatMath.IsParry(attacker.BlockStartedAt, clock, Combat.ParryWindow) then
+	if attacker.ParryEligible and CombatMath.IsParry(attacker.BlockStartedAt, clock, Combat.ParryWindow) then
+		attacker.ParryEligible = false
+		target.ParryEligible = false
 		stun(attacker, Combat.ClashStagger)
 		stun(target, Combat.ClashStagger)
 		fx({ Kind = "Clash", Attacker = attacker.Model, Target = target.Model, Position = position })
@@ -788,9 +791,10 @@ local function resolveHit(attacker: Fighter, target: Fighter, spec: HitSpec)
 	target.HP = math.max(0, target.HP - damage)
 	target.LastHitTakenAt = clock
 	setAttr(target, "HP", math.floor(target.HP * 10 + 0.5) / 10)
-	markCombat(attacker)
-	markCombat(target)
 	if not target.Dummy then
+		-- Training on a dojo dummy doesn't count as a fight (shops and jobs stay usable).
+		markCombat(attacker)
+		markCombat(target)
 		addHeat(target, Combat.HeatPerHitTaken)
 	end
 	if not spec.IsHeat then
