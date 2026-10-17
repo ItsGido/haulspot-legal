@@ -864,6 +864,7 @@ function PopupController.Start()
 	local playerGui = player:WaitForChild("PlayerGui")
 	gui = W.Overlay(playerGui, "Popups", 40)
 	koGui = W.Overlay(playerGui, "KOScreen", 60)
+	koGui.ScreenInsets = Enum.ScreenInsets.None -- the K.O. dimmer covers the whole screen
 	buildTourney()
 	buildTutorial()
 	buildChallenge()
