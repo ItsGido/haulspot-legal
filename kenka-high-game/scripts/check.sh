@@ -3,7 +3,8 @@
 #   1. luau-lsp type check (Roblox API types + Rojo sourcemap)
 #   2. selene lint
 #   3. unit tests (tests/run.luau)
-#   4. rojo build (proves the project assembles into a place file)
+#   4. cross-reference check (scripts/xref.py)
+#   5. rojo build (proves the project assembles into a place file)
 set -uo pipefail
 cd "$(dirname "$0")/.."
 T=.tools
@@ -26,6 +27,9 @@ echo "== Lint (selene)"
 if $T/selene --display-style=quiet $FILTER 2>"$RUN/selene.txt"; then :; else
   if grep -q "standard library" "$RUN/selene.txt"; then echo "(selene skipped: could not fetch the Roblox API dump)"; else cat "$RUN/selene.txt"; status=1; fi
 fi
+
+echo "== Cross-references"
+python3 scripts/xref.py || echo "(cross-reference warnings above; services built in parallel may not exist yet)"
 
 echo "== Unit tests"
 $T/luau tests/run.luau || status=1
