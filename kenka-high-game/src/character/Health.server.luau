@@ -1,0 +1,2 @@
+-- Replaces Roblox's default Health script so the humanoid does not regenerate on its own.
+-- Kenka High tracks fight HP with the "HP" and "MaxHP" character attributes (see CombatService).

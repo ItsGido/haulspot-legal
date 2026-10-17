@@ -1,0 +1,60 @@
+{
+  "name": "KenkaHigh",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "$properties": {
+        "CharacterWalkSpeed": 16,
+        "CharacterUseJumpPower": false,
+        "CharacterJumpHeight": 7.2,
+        "AutoJumpEnabled": false
+      },
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/client"
+        }
+      },
+      "StarterCharacterScripts": {
+        "$path": "src/character"
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "ClockTime": 16.8,
+        "Brightness": 2.5,
+        "Ambient": [
+          0.35,
+          0.3,
+          0.32
+        ],
+        "OutdoorAmbient": [
+          0.55,
+          0.47,
+          0.45
+        ],
+        "GlobalShadows": true
+      }
+    },
+    "SoundService": {
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "Gravity": 196.2,
+        "FallenPartsDestroyHeight": -5000
+      }
+    }
+  }
+}
