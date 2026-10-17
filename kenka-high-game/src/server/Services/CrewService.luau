@@ -544,14 +544,8 @@ local function actionCreate(player: Player, args: any): (boolean, any)
 	if player.Parent ~= Players then
 		return false, "Player left."
 	end
-	if not Services.DataService.SpendYen(player, cost) then
-		return false, string.format("You need ¥%d.", cost)
-	end
-	local function refund()
-		Services.DataService.Update(player, { "Yen" }, function(p: any)
-			p.Yen += cost
-		end)
-	end
+	-- The fee is charged only after the crew exists and the player is still here (see below),
+	-- so a player leaving mid-create never loses yen.
 
 	local crewId = newCrewId()
 	local claimed = false
@@ -564,7 +558,6 @@ local function actionCreate(player: Player, args: any): (boolean, any)
 		return nil
 	end)
 	if not claimOk or not claimed then
-		refund()
 		return false, if claimOk then "That crew name is taken." else BUSY
 	end
 
@@ -599,13 +592,11 @@ local function actionCreate(player: Player, args: any): (boolean, any)
 		CrewStore.Update(GameConfig.CrewNameStoreName, nameKey(name), function(old: any)
 			return if old == crewId then "" else nil
 		end)
-		refund()
 		return false, BUSY
 	end
 	crews[crewId] = if isLive(stored) then stored else record
 
-	if player.Parent ~= Players then
-		-- Left mid-create: the profile can't point at the crew any more, so don't leave an orphan behind.
+	local function abandon()
 		task.spawn(function()
 			mutateCrew(crewId, function(r)
 				tombstone(r)
@@ -613,7 +604,16 @@ local function actionCreate(player: Player, args: any): (boolean, any)
 			end)
 			finishDisband(crewId, name)
 		end)
+	end
+	if player.Parent ~= Players then
+		-- Left mid-create: the profile can't point at the crew any more, so don't leave an orphan behind.
+		abandon()
 		return false, "Player left."
+	end
+	if not Services.DataService.SpendYen(player, cost) then
+		-- Spent the yen elsewhere while the name was being claimed.
+		abandon()
+		return false, string.format("You need ¥%d.", cost)
 	end
 
 	clearPendingFor(player.UserId)

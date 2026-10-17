@@ -194,6 +194,22 @@ Screen names used with `UIController.Open`: `Phone`, `Rumors`, `Style`, `Crew`, 
 
 ---
 
+## 3b. API additions beyond the original contract (implemented)
+
+| Module | Additions |
+|---|---|
+| CombatService | `UnregisterFighter(model)`, `IsFighter(model)`, `RefreshMovement(model)`, `PerformAction(model, action, overrides?)` (NPCs attack through this; overrides `Damage`, `Windup`, `MinTargetHP`), `CanHit(attacker, target, ignoreDowned?)`, `GetHits(attacker, target)`, `GetLastHitTakenAt(model)`, `GetFighterModels()`, `GetMaxHP(model)`, `IsStunned(model)`, `IsBusy(model)`, `SetStance(model, on)`. Signals `FighterRegistered`, `FighterRemoved`. `HitLanded` info = `{ Action, Technique, Damage, Blocked, GuardBreak, IsHeat, Hits }`. Fighters carry the CollectionService tag `"Fighter"`. Skips walk speed while the player has a `Vehicle` attribute. |
+| KnockoutService | `Cancel(model)` (drops downed state silently; used by Revive) |
+| NPCService | `OnFinished(model)`, `IsNPC(model)` |
+| RepService | `AddRep` returns the Rep actually gained. `FightResult` with Kind "Tournament" gives only mastery XP and Wins/Losses. |
+| ChallengeService | `GetOpponent(player) -> (Player?, kind?)`. Forced duels call `OnEnd(winner?, loser?, reason, info)`, with reason KO/LeftRing/Left/Timeout/Cancelled and info `{ WinnerHits, LoserHits }`. |
+| StyleService / CrownService / TournamentService / TutorialService | `EquipStyle(player, id)` (no range check) · `GetHolder()` · `IsParticipant(player)`, `GetState()` · `GetStep(player)` |
+| ShopService / VehicleService / MonetizationService | `ApplyBuff(player, buff)`, `ClearBuffs(player)` · `Mount(player, id) -> ok, msg`, `IsMounted(player)` · `PromptPass(player, key)` |
+| CrewService | `GetCrewSummary(crewId, viewer?)`, `GetCrewColor(player) -> Color3?`, `GetOnlineMembers(crewId)`, `AddCrewRep(crewId, amount, captures?)`, `BroadcastCrew(crewId)`, signal `CrewDisbanded(crewId)`. The crew fee is charged only after the crew is created. |
+| TurfService | `GetState()`, signal `OwnershipChanged(turfId, new?, old?)` |
+| Client | `CombatController.Request/CooldownChanged/GetCooldownRemaining/IsInStance/StanceChanged` · `FXController.Predict(action, info?)`, `PlayAction(model, action, info?)` · `ChallengeController.ChallengePlayer(p)`, `GetDuel()`, `DuelChanged` · `CrewController.GetSummary()`, `Changed`, `Action(action, args)`, `GetTurfState()`, `TurfChanged` · `ToastController.Show(text, kind?, duration?)`, `Clear()` · `HUDController.GetTurfState()`, `TurfChanged`, `GetClockText()`, `SetMobileControls(forced?)`, `SetVisible(bool)` · `PopupController.ShowStarterPack()`, `HideTutorial()` · `JobController.GetActiveJob()` · `VehicleController.Toggle()` · `AudioController` (applies Settings volumes) |
+| Screens open data | Rumors/Store `{ Tab }`, Style `{ AtDojo, StyleId }`, YenPay `{ UserId }`, Shop `{ ShopId }`, Class `{ Questions, EndsAt }`, Creator `{ FreeHeight }` |
+
 ## 4. Remotes (all declared in `src/shared/Util/Net.luau`)
 
 | Remote | Direction | Payload |
@@ -205,25 +221,25 @@ Screen names used with `UIController.Open`: `Phone`, `Rumors`, `Style`, `Crew`, 
 | Settings_Save | C→S | `{ Music?, SFX?, CameraShake?, DamageNumbers?, RookieOptOut?, MobileLayout? }` |
 | Unstuck | C→S | — |
 | Combat_Request | C→S | `action, data?`. Actions: `Stance`, `M1`, `Heavy`, `BlockStart`, `BlockEnd`, `Dash`, `Weave`, `SprintStart`, `SprintEnd`, `Tech1`, `Tech2`, `Heat`. data: `{ Direction: Vector3? }` |
-| Combat_FX | S→All | `{ Kind, Attacker: Model, Target: Model?, Action?, Index?, Damage?, Blocked?, Position: Vector3? }`. Kinds: Swing, Hit, Block, Parry, GuardBreak, Dash, Weave, Heat, Knockdown, Finish, Clash, Technique |
+| Combat_FX | S→All | `{ Kind, Attacker: Model, Target: Model?, ... }`. Swing: Action, Index, Windup · Technique/Heat: Action, Technique, TechKind, Windup, Lunge? · Hit/Block: Action, Index, Technique, Damage, Blocked, Heavy, IsHeat, Position · Parry (Attacker = striker, Target = parrier) · GuardBreak/Clash: Position · Dash/Weave · Knockdown: Duration, KO, Position · Finish: Position · **Knockback** (victim only): Velocity, Duration |
 | Combat_Cooldown | S→C | `action, seconds` |
 | KO_Screen | S→C | `{ KillerName, Stamp, RespawnIn }` |
 | RankUp | S→C | `{ Rank, Title, Scrolls, Yen }` |
 | Challenge_Send | C→S | `targetPlayer` |
 | Challenge_Incoming | S→C | `{ From: Player, FromName, FromRank, FromTitle, Wager, ExpiresAt }` |
 | Challenge_Respond | C→S | `fromPlayer, accept: boolean` |
-| Challenge_Update | S→C | `{ State = "Sent"|"Declined"|"Expired"|"Started"|"Ended"|"Cancelled", Opponent?, OpponentName?, Center?, Radius?, Winner?, WinnerName?, Wager?, Message? }` |
-| Tourney_Update | S→All | `{ State = "Idle"|"Signup"|"Running"|"Finished", Players = {names}, Needed, Bracket = { { { A, B, Winner? } } } (rounds), Match = { A, B, EndsAt }?, Message? }` |
+| Challenge_Update | S→C | `{ State = "Sent"|"Declined"|"Expired"|"Started"|"Ended"|"Cancelled", Kind?, Opponent?, OpponentName?, Center?, Radius?, EndsAt? (server time), Winner?, WinnerName?, Wager?, Message? }` |
+| Tourney_Update | S→All | `{ State = "Idle"|"Signup"|"Running"|"Finished", Players = {names}, Needed, Max, Bracket = { { { A, B, Winner? } } } (rounds), Match = { A, B, EndsAt }?, Message? }` |
 | Tutorial_Update | S→C | `{ Step: string, Text, Choices? = {styleIds}, Done? }` |
 | Tutorial_PickStyle (RF) | C→S | `styleId` → ok |
 | Tutorial_Skip | C→S | — |
-| Job_Update | S→C | `{ JobId, State = "Started"|"Progress"|"Finished"|"Cancelled", Data? }`, shape owned by JobService/JobController |
+| Job_Update | S→C | `{ JobId, State, Data }`. Started: Ramen `{ Drops = {Vector3}, Index, EndsAt }`, Konbini `{ Notes, Seconds, MinDuration, EndsAt }`, Arcade `{ Tokens = {Vector3}, Collected, Total, EndsAt }` · Progress: Ramen `{ Drops, Index }`, Arcade `{ Tokens, Collected, Total }` · Finished `{ Pay, Gold }` · Cancelled `{ Reason }` (failures too) |
 | Job_Submit | C→S | `jobId, data` |
 | Job_Cancel | C→S | — |
 | Vehicle_Toggle | C→S | `vehicleId?` |
 | LoginReward | S→C | `{ Day, Streak, Reward = { Yen?, Scrolls?, CapsuleTokens?, Badge? } }` |
-| Crew_Update | S→C | crew summary or nil: `{ Id, Name, Color, Emblem, Leader, MyRole, Members = { { UserId, Name, Role, Online } }, MaxMembers, WeeklyRep, TurfsHeld = {turfIds} }` |
-| Crew_Invite | S→C | `{ CrewId, CrewName, FromName }` |
+| Crew_Update | S→C | crew summary or nil: `{ Id, Name, Color, Emblem, Leader, MyRole, Members = { { UserId, Name, Role, Online } }, MaxMembers, WeeklyRep, TurfsHeld = {turfIds}, ColorIndex, EmblemIndex, TotalCaptures, Requests? = { { UserId, Name } } (leaders/lieutenants) }` |
+| Crew_Invite | S→C | `{ CrewId, CrewName, FromName, Color, Emblem, ExpiresIn }` |
 | Turf_Update | S→All | `{ Active: boolean, Turfs = { [turfId] = { Name, OwnerCrewId?, OwnerName?, OwnerColor?, OwnerEmblem?, CapturingName?, CapturingColor?, Progress (0-100), Contested } } }` |
 | Style_Equip (RF) | C→S | `styleId` → ok, message |
 | Style_Unlock (RF) | C→S | `styleId, "Scrolls"|"Robux"` → ok, message |
@@ -246,8 +262,9 @@ Screen names used with `UIController.Open`: `Phone`, `Rumors`, `Style`, `Crew`, 
 | Player | Zone, ZoneType, ZoneTurf | ZoneService | current zone |
 | Player | InDuel, Crown, InTournament | Progression | flags |
 | Player | CrewName, CrewColor, CrewEmblem | CrewService | crew display |
-| Player | TitleText | CosmeticsService | equipped title |
+| Player | TitleText, TitleColor | CosmeticsService | equipped title |
 | Player | Buff_<Group> (server time expiry), ActiveJob, Vehicle | Economy | |
+| Vehicle model | VehicleId | VehicleService | |
 | Player | NextSpawn | MapService | internal |
 | Character / NPC model | Fighter (true), HP, MaxHP, Posture, MaxPosture, Heat, Stance, Blocking, Downed, InCombat, Protected, StunnedUntil, IsNPC, DisplayName | CombatService / KnockoutService / NPCService | fight state (HUD reads these) |
 | ReplicatedStorage | PeriodId, PeriodName, PeriodEndsAt | DayCycleService | school clock |

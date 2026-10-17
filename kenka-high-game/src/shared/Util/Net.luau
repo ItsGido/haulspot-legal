@@ -32,7 +32,7 @@ local EVENTS = {
 	"Job_Submit", -- C->S  jobId, data
 	"Job_Cancel", -- C->S
 	"Vehicle_Toggle", -- C->S  vehicleId? (nil = dismount)
-	"LoginReward", -- S->C  { Day, Reward }
+	"LoginReward", -- S->C  { Day, Streak, Reward }
 	-- Social
 	"Crew_Update", -- S->C  crewSummary or nil
 	"Crew_Invite", -- S->C  { CrewId, CrewName, FromName }

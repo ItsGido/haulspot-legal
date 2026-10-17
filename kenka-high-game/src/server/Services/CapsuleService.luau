@@ -24,6 +24,7 @@ local VALID_SLOTS = { Aura = true, Title = true, Armband = true, KOStamp = true,
 local ANNOUNCE_RARITY = "Mythic" -- server-wide shout-out for this rarity
 
 local rollLimiter = RateLimiter.new(3, 2)
+local CAPSULE_RANGE = 24 -- studs from a Capsule Corner machine (the screen stays open while you stand there)
 local equipLimiter = RateLimiter.new(8, 2)
 local busy: { [Player]: boolean } = {}
 local uiOpen = Net.Event("UI_Open")
@@ -73,6 +74,11 @@ local function onRoll(player: Player, count: any, currency: any): (boolean, any)
 	end
 	if busy[player] then
 		return false, "Still rolling..."
+	end
+	if not EconomyUtil.NearInteractable(player, CAPSULE_RANGE, function(entry)
+		return entry.Kind == "Capsule"
+	end) then
+		return false, "Roll at the machines in Capsule Corner."
 	end
 	local profile = Services.DataService.GetProfile(player)
 	if not profile then

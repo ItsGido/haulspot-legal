@@ -130,6 +130,16 @@ function Kit.Label(name: string, parent: Instance, text: string, position: UDim2
 end
 
 local sounds: { [string]: Sound } = {}
+local sfxVolume = 0.8
+
+-- Set by AudioController from the player's Settings (0..1).
+function Kit.SetSFXVolume(volume: number)
+	sfxVolume = math.clamp(volume, 0, 1)
+	for _, sound in sounds do
+		sound.Volume = sfxVolume
+	end
+end
+
 function Kit.PlaySound(name: string)
 	local id = (UITheme.Sounds :: any)[name]
 	if type(id) ~= "number" or id == 0 then
@@ -139,6 +149,7 @@ function Kit.PlaySound(name: string)
 	if not sound then
 		local created = Instance.new("Sound")
 		created.SoundId = "rbxassetid://" .. id
+		created.Volume = sfxVolume
 		created.Parent = SoundService
 		sounds[name] = created
 		sound = created
