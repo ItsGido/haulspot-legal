@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kenka High UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@600&family=Nunito+Sans:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0F1016; --panel: #1C1E2B; --panel-light: #262A3B; --paper: #F5F1E8; --muted: #A9ADBD;
+    --red-a: #FF5A4F; --red-b: #B81D17; --red-s: #4A0906;
+    --navy-a: #4A6FC4; --navy-b: #22397A; --navy-s: #0B1530;
+    --gold-a: #FFE066; --gold-b: #E09A00; --gold-s: #6B4400;
+    --green-a: #5FE08A; --green-b: #249A4C; --green-s: #0B3D1D;
+    --sakura: #FF9EC4; --hp: #E4322B; --posture: #F4C542; --zone-red: #E4322B;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #08090C; color: var(--paper); font-family: "Nunito Sans", sans-serif; padding: 24px 16px 48px; }
+  h1 { font-family: Bangers, sans-serif; letter-spacing: 1px; font-size: 40px; margin: 0 0 4px; }
+  h2 { font-family: Bangers, sans-serif; letter-spacing: 1px; font-size: 26px; margin: 36px 0 8px; }
+  p.note { color: var(--muted); margin: 0 0 12px; max-width: 900px; }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  /* 16:9 phone-landscape screen. Children use % positions = UDim2 scale values from the blueprint. */
+  .screen { position: relative; width: 100%; aspect-ratio: 16 / 9; border: 4px solid #000; border-radius: 18px; overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(255,170,90,.55) 0%, rgba(255,120,120,.25) 35%, rgba(20,22,32,.2) 60%),
+      linear-gradient(0deg, #3b3f4d 0 32%, transparent 32%),
+      radial-gradient(circle at 70% 40%, #ffcf8a 0, transparent 30%),
+      #6d6a8a; container-type: inline-size; }
+  .scene-building { position: absolute; left: 20%; top: 22%; width: 60%; height: 36%; background: #cfc6b8; border: 3px solid #000; }
+  .scene-building::before { content: ""; position: absolute; left: 45%; top: -38%; width: 10%; height: 38%; background: #cfc6b8; border: 3px solid #000; border-bottom: 0; }
+  .scene-tree { position: absolute; width: 12%; aspect-ratio: 1; border-radius: 50%; background: #ff9ec4; border: 3px solid #000; opacity: .9; }
+  .abs { position: absolute; }
+  .panel { background: var(--panel); border: 3px solid #000; border-radius: 1.2cqw; }
+  .bangers { font-family: Bangers, sans-serif; letter-spacing: .05em; }
+  .num { font-family: Fredoka, sans-serif; font-weight: 600; }
+  .ink-text { -webkit-text-stroke: .12cqw #000; paint-order: stroke fill; }
+  .btn { display: flex; align-items: center; justify-content: center; gap: .4em; border: .3cqw solid #000; border-radius: 1cqw; color: #fff;
+    font-weight: 900; font-size: 1.5cqw; text-shadow: 0 .15cqw 0 rgba(0,0,0,.45); cursor: pointer; user-select: none; transition: transform .08s; }
+  .btn:active { transform: scale(.92); }
+  .primary { background: linear-gradient(var(--red-a), var(--red-b)); }
+  .secondary { background: linear-gradient(var(--navy-a), var(--navy-b)); }
+  .premium { background: linear-gradient(var(--gold-a), var(--gold-b)); }
+  .success { background: linear-gradient(var(--green-a), var(--green-b)); }
+  .ghost { background: var(--panel-light); }
+  .disabled { background: linear-gradient(#5A5E6B, #3B3E48); color: var(--muted); }
+  .bar { position: relative; background: #000; border: .2cqw solid #000; border-radius: .5cqw; overflow: hidden; }
+  .bar > i { position: absolute; inset: 0 auto 0 0; display: block; }
+  .rbx { display: inline-block; width: 1em; height: 1em; border: .18em solid #fff; transform: rotate(15deg); border-radius: .15em; }
+  .icon-btn { flex-direction: column; font-size: .9cqw; gap: .2cqw; aspect-ratio: 1; }
+  .icon-btn b { font-size: 2.2cqw; line-height: 1; }
+  .round { border-radius: 50%; aspect-ratio: 1; }
+  .dim { position: absolute; inset: 0; background: rgba(15,16,22,.45); }
+  .header { background: linear-gradient(var(--red-a), var(--red-b)); border-bottom: .3cqw solid #000; padding: .6cqw 1.2cqw; }
+  .header span { display: inline-block; transform: rotate(-3deg); font-size: 2.6cqw; }
+  .close { position: absolute; right: -1.6cqw; top: -1.6cqw; width: 4cqw; font-size: 1.8cqw; }
+  .legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-top: 12px; }
+  .swatch { display: flex; align-items: center; gap: 10px; background: #14151d; border: 2px solid #000; border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+  .swatch i { width: 34px; height: 24px; border: 2px solid #000; border-radius: 4px; flex: none; }
+  code { color: var(--sakura); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="ink-text">KENKA HIGH: UI MOCKUPS</h1>
+  <p class="note">Every element below sits at the exact <code>UDim2</code> scale position and size from blueprint section 5, on a 16:9 phone-landscape screen. Colors and fonts are the "Manga Ink" tokens (Bangers for titles, FredokaOne for numbers; Nunito Sans stands in for Roblox's BuilderSans here). Buttons press like they will in game: click one.</p>
+
+  <!-- ============ HUD ============ -->
+  <h2>1 · HUD (mobile, After School in the Riverbank)</h2>
+  <div class="screen">
+    <div class="scene-building"></div>
+    <div class="scene-tree" style="left:6%;top:30%"></div>
+    <div class="scene-tree" style="left:82%;top:28%"></div>
+
+    <!-- PlayerCard (0.01,0.02) size (0.24,0.11) -->
+    <div class="abs panel" style="left:1%;top:2%;width:24%;height:11%;display:flex;align-items:center;gap:3%;padding:0 3%">
+      <div class="round" style="height:84%;background:conic-gradient(#FFB627 0 62%, #3a3d4d 0);border:.3cqw solid #000;display:flex;align-items:center;justify-content:center">
+        <div class="round bangers ink-text" style="height:74%;background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:1.9cqw">4</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6%">
+        <div style="font-size:1.05cqw;font-weight:900">RYU_K <span style="color:var(--muted);font-weight:700">· Delinquent</span></div>
+        <div class="bar" style="height:1.3cqw"><i style="width:100%;background:#fff;opacity:.6;width:78%"></i><i style="width:64%;background:var(--hp)"></i></div>
+        <div class="bar" style="height:.8cqw"><i style="width:48%;background:var(--posture)"></i></div>
+        <div class="bar" style="height:.6cqw"><i style="width:85%;background:linear-gradient(90deg,#FF7A1A,#FFD23F)"></i></div>
+      </div>
+    </div>
+
+    <!-- ZonePill (0.5,0.02) size (0.2,0.05) anchor (0.5,0) -->
+    <div class="abs bangers ink-text" style="left:40%;top:2%;width:20%;height:5%;background:var(--zone-red);border:.3cqw solid #000;border-radius:3cqw;display:flex;align-items:center;justify-content:center;font-size:1.6cqw">RED ZONE · RIVERBANK</div>
+    <!-- PeriodPill (0.5,0.075) size (0.16,0.04) -->
+    <div class="abs panel" style="left:42%;top:7.5%;width:16%;height:4%;border-radius:3cqw;display:flex;align-items:center;justify-content:center;font-size:1.05cqw;font-weight:900">AFTER SCHOOL <span class="num" style="margin-left:.5em;color:var(--posture)">6:12</span></div>
+
+    <!-- CurrencyStack (0.99,0.02) size (0.16,0.1) anchor (1,0) -->
+    <div class="abs panel" style="left:83%;top:2%;width:16%;height:10%;padding:.5cqw 1cqw;display:flex;flex-direction:column;justify-content:center;gap:10%">
+      <div class="num" style="font-size:1.9cqw;color:#FFE066">¥ 12,480</div>
+      <div style="display:flex;align-items:center;gap:.5cqw;font-size:.9cqw;font-weight:800"><span>REP</span><div class="bar" style="flex:1;height:.9cqw"><i style="width:62%;background:#FFB627"></i></div><span class="num">62%</span></div>
+    </div>
+    <!-- StoreButton (0.99,0.135) size (0.1,0.06) anchor (1,0) -->
+    <div class="abs btn premium" style="left:89%;top:13.5%;width:10%;height:6%"><span class="rbx"></span>STORE</div>
+
+    <!-- MenuRail (0.01,0.42) size (0.055,0.42) anchor (0,0.5) -->
+    <div class="abs" style="left:1%;top:21%;width:5.5%;height:42%;display:flex;flex-direction:column;gap:.85cqw">
+      <div class="btn secondary icon-btn" style="width:100%"><b>📱</b>PHONE</div>
+      <div class="btn primary icon-btn" style="width:100%"><b>👊</b>STYLE</div>
+      <div class="btn icon-btn" style="width:100%;background:linear-gradient(#FFB3D2,#E0679B)"><b>🚩</b>CREW</div>
+      <div class="btn success icon-btn" style="width:100%"><b>🗺</b>MAP</div>
+    </div>
+
+    <!-- TurfTicker (0.99,0.21) size (0.17,0.18) anchor (1,0) -->
+    <div class="abs panel" style="left:82%;top:21%;width:17%;height:18%;padding:.6cqw 1cqw;font-size:.95cqw;font-weight:800">
+      <div class="bangers" style="font-size:1.4cqw;color:var(--sakura)">TURF WAR</div>
+      <div>T1 Shotengai · <span style="color:#FF5A4F">Red Ravens</span></div>
+      <div>T2 Riverbank · <span style="color:var(--posture)">contested ▮▮▮▯</span></div>
+      <div>T3 Park · <span style="color:#4A6FC4">Blue Oni</span></div>
+      <div>T4 Docks · <span style="color:var(--muted)">unclaimed</span></div>
+      <div>T5 Neon Alley · <span style="color:#FF5A4F">Red Ravens</span></div>
+    </div>
+
+    <!-- Toast (0.5,0.16) size (0.4,0.06) -->
+    <div class="abs panel" style="left:30%;top:16%;width:40%;height:6%;display:flex;align-items:center;justify-content:center;font-size:1.2cqw;font-weight:800;border-color:#000;box-shadow:0 0 0 .2cqw var(--zone-red) inset">⚠ RED ZONE: open fights · Double Rep active</div>
+
+    <!-- Damage number -->
+    <div class="abs num ink-text" style="left:52%;top:40%;font-size:3cqw;color:#FFD23F">-12</div>
+    <div class="abs bangers ink-text" style="left:40%;top:46%;font-size:4.4cqw;color:#fff;transform:rotate(-6deg)">PARRY!</div>
+
+    <!-- Mobile combat cluster (0.985,0.74) size (0.3,0.32) anchor (1,1)  => left 68.5%, top 42% -->
+    <div class="abs" style="left:68.5%;top:42%;width:30%;height:32%">
+      <div class="btn primary round abs" style="right:4%;bottom:0;height:60%;font-size:1.6cqw;box-shadow:0 0 0 .5cqw #FFD23F">ATTACK</div>
+      <div class="btn primary round abs" style="right:41%;bottom:0;height:34%;font-size:1.05cqw">HEAVY</div>
+      <div class="btn secondary round abs" style="right:41%;bottom:52%;height:34%;font-size:1.05cqw">BLOCK</div>
+      <div class="btn secondary round abs" style="right:63%;bottom:4%;height:30%;font-size:1cqw">DASH</div>
+      <div class="btn ghost round abs" style="right:63%;bottom:50%;height:30%;font-size:.9cqw">TECH 1</div>
+      <div class="btn disabled round abs" style="right:83%;bottom:4%;height:27%;font-size:.85cqw">TECH 2<br>4s</div>
+      <div class="btn ghost round abs" style="right:83%;bottom:50%;height:27%;font-size:.8cqw">STANCE</div>
+    </div>
+    <!-- Reserved zones (shown faintly): jump button bottom-right, thumbstick bottom-left -->
+    <div class="abs round" style="right:3%;bottom:6%;height:20%;border:.3cqw dashed rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-size:1cqw;color:rgba(255,255,255,.7)">Roblox jump</div>
+    <div class="abs round" style="left:6%;bottom:8%;height:26%;border:.3cqw dashed rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-size:1cqw;color:rgba(255,255,255,.7)">thumbstick</div>
+  </div>
+
+  <!-- ============ PHONE + CHALLENGE ============ -->
+  <h2>2 · Challenge popup and Phone</h2>
+  <p class="note">Shown together to save space: in game the popup is centered at (0.5, 0.35), and the phone never opens during a fight.</p>
+  <div class="screen">
+    <div class="scene-building"></div>
+    <div class="dim"></div>
+    <!-- Challenge popup (0.5,0.35) size (0.34,0.2) anchor (0.5,0.5) -> left 33%, top 25% -->
+    <div class="abs panel" style="left:22%;top:23%;width:34%;height:24%;border-width:.35cqw;overflow:visible">
+      <div class="header" style="border-radius:1cqw 1cqw 0 0"><span class="bangers ink-text">CHALLENGE!</span></div>
+      <div style="padding:1cqw 1.4cqw;font-size:1.2cqw;font-weight:800">KAITO_99 <span style="color:var(--muted)">· Rank 5 Enforcer</span> wants to fight.<br><span style="color:var(--posture)">Wager: 40 Rep</span></div>
+      <div style="display:flex;gap:4%;padding:0 1.4cqw;height:30%">
+        <div class="btn primary" style="flex:1">ACCEPT</div>
+        <div class="btn ghost" style="flex:1">DECLINE</div>
+      </div>
+      <div class="bar" style="margin:1cqw 1.4cqw 0;height:.7cqw"><i style="width:70%;background:var(--red-a)"></i></div>
+    </div>
+    <!-- Phone (0.72,0.5) size (0.28,0.8) anchor (0.5,0.5), aspect 0.5 -->
+    <div class="abs" style="left:60.75%;top:10%;width:22.5%;height:80%;background:var(--ink);border:.35cqw solid #000;border-radius:2.2cqw;padding:1cqw;box-shadow:0 0 0 .3cqw #2b2e3c inset">
+      <div style="height:100%;background:var(--panel);border-radius:1.4cqw;padding:1cqw;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;font-size:.95cqw;font-weight:900"><span>AFTER SCHOOL 6:12</span><span class="num" style="color:#FFE066">¥12,480</span></div>
+        <div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:1cqw;align-content:center;margin-top:1cqw">
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn primary icon-btn" style="width:100%"><b>📜</b></div>Rumors</div>
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn success icon-btn" style="width:100%"><b>🍜</b></div>Jobber</div>
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn icon-btn" style="width:100%;background:linear-gradient(#FFB3D2,#E0679B)"><b>🚩</b></div>Crew</div>
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn secondary icon-btn" style="width:100%"><b>🗺</b></div>Map</div>
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn premium icon-btn" style="width:100%"><b>¥</b></div>YenPay</div>
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn primary icon-btn" style="width:100%"><b>👊</b></div>Style</div>
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn ghost icon-btn" style="width:100%"><b>🏆</b></div>Fights</div>
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn premium icon-btn" style="width:100%"><b>🛒</b></div>Store</div>
+          <div style="text-align:center;font-size:.85cqw;font-weight:800"><div class="btn ghost icon-btn" style="width:100%"><b>⚙</b></div>Settings</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STYLE SCREEN ============ -->
+  <h2>3 · Style / Dojo screen</h2>
+  <div class="screen">
+    <div class="dim" style="background:rgba(15,16,22,.7)"></div>
+    <div class="abs panel" style="left:10%;top:10%;width:80%;height:80%;border-width:.35cqw;overflow:visible;display:flex;flex-direction:column">
+      <div class="header" style="border-radius:1cqw 1cqw 0 0"><span class="bangers ink-text">DOJO · FIGHTING STYLES</span></div>
+      <div class="btn primary round close">✕</div>
+      <div style="flex:1;display:flex;gap:2%;padding:1.4cqw">
+        <div style="width:30%;display:flex;flex-direction:column;gap:.6cqw">
+          <div class="btn primary" style="height:9%;justify-content:flex-start;padding-left:1cqw">👊 STREET BRAWLER</div>
+          <div class="btn ghost" style="height:9%;justify-content:flex-start;padding-left:1cqw;box-shadow:0 0 0 .3cqw #FFD23F inset">🥊 BOXING · M7</div>
+          <div class="btn ghost" style="height:9%;justify-content:flex-start;padding-left:1cqw">🥋 KARATE</div>
+          <div class="btn disabled" style="height:9%;justify-content:flex-start;padding-left:1cqw">🔒 JUDO · 25 📜</div>
+          <div class="btn disabled" style="height:9%;justify-content:flex-start;padding-left:1cqw">🔒 MUAY THAI · 25 📜</div>
+          <div class="btn disabled" style="height:9%;justify-content:flex-start;padding-left:1cqw">🔒 CAPOEIRA · 25 📜</div>
+          <div class="btn disabled" style="height:9%;justify-content:flex-start;padding-left:1cqw">🔒 SUMO · 25 📜</div>
+          <div class="btn disabled" style="height:9%;justify-content:flex-start;padding-left:1cqw">🔒 TAEKWONDO · 25 📜</div>
+        </div>
+        <div class="panel" style="flex:1;background:var(--panel-light);padding:1.4cqw;display:flex;flex-direction:column;gap:1cqw">
+          <div class="bangers ink-text" style="font-size:3.4cqw">BOXING</div>
+          <div style="font-size:1.2cqw;font-weight:800">Passive · <span style="color:var(--posture)">Footwork</span>: dash cooldown −0.5 s</div>
+          <div style="display:flex;align-items:center;gap:1cqw;font-size:1cqw;font-weight:800">MASTERY 7 <div class="bar" style="flex:1;height:1cqw"><i style="width:45%;background:#FFB627"></i></div><span class="num">378 / 840 XP</span></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1cqw;flex:1">
+            <div class="panel" style="padding:1cqw;font-size:1cqw;font-weight:700"><div class="bangers" style="font-size:1.6cqw;color:var(--green-a)">✓ FEINT JAB</div>Mastery 5 · cancels into a dash · 6 s cd</div>
+            <div class="panel" style="padding:1cqw;font-size:1cqw;font-weight:700;opacity:.6"><div class="bangers" style="font-size:1.6cqw">🔒 COUNTER HOOK</div>Mastery 10 · after a parry, 14 dmg · 8 s cd</div>
+            <div class="panel" style="padding:1cqw;font-size:1cqw;font-weight:700;opacity:.6"><div class="bangers" style="font-size:1.6cqw;color:#FF7A1A">🔒 RUSH COMBO</div>Heat move · Mastery 15</div>
+          </div>
+          <div style="display:flex;gap:2%;height:16%">
+            <div class="btn primary" style="flex:1;font-size:1.8cqw">EQUIP</div>
+            <div class="btn premium" style="flex:1;font-size:1.4cqw"><span class="rbx"></span>STYLE TICKET 249</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Design tokens</h2>
+  <div class="legend">
+    <div class="swatch"><i style="background:linear-gradient(#FF5A4F,#B81D17)"></i>Primary · #FF5A4F → #B81D17</div>
+    <div class="swatch"><i style="background:linear-gradient(#4A6FC4,#22397A)"></i>Secondary · #4A6FC4 → #22397A</div>
+    <div class="swatch"><i style="background:linear-gradient(#FFE066,#E09A00)"></i>Premium · #FFE066 → #E09A00</div>
+    <div class="swatch"><i style="background:linear-gradient(#5FE08A,#249A4C)"></i>Success · #5FE08A → #249A4C</div>
+    <div class="swatch"><i style="background:#1C1E2B"></i>Panel · #1C1E2B</div>
+    <div class="swatch"><i style="background:#262A3B"></i>Panel Light · #262A3B</div>
+    <div class="swatch"><i style="background:#F5F1E8"></i>Paper text · #F5F1E8</div>
+    <div class="swatch"><i style="background:#FF9EC4"></i>Sakura accent · #FF9EC4</div>
+    <div class="swatch"><i style="background:#E4322B"></i>HP / Red zone · #E4322B</div>
+    <div class="swatch"><i style="background:#F4C542"></i>Posture / Yellow zone · #F4C542</div>
+    <div class="swatch"><i style="background:#3BC46B"></i>Green zone · #3BC46B</div>
+    <div class="swatch"><i style="background:linear-gradient(90deg,#FF7A1A,#FFD23F)"></i>Heat · #FF7A1A → #FFD23F</div>
+  </div>
+</div>
+<script>
+  // Toggle the challenge popup buttons for a feel of interactivity.
+  document.querySelectorAll('.btn').forEach(b => b.addEventListener('click', () => {
+    b.animate([{ transform: 'scale(.92)' }, { transform: 'scale(1)' }], { duration: 230, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+  }));
+</script>
+</body>
+</html>
